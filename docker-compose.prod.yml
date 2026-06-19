@@ -1,0 +1,56 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: lanche-db-prod
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-lanche_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-lanche_pass}
+      POSTGRES_DB: ${POSTGRES_DB:-lanche_db}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - lanche-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: lanche-backend-prod
+    restart: always
+    command: /bin/bash scripts/start.sh
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-lanche_user}:${POSTGRES_PASSWORD:-lanche_pass}@db:5432/${POSTGRES_DB:-lanche_db}
+      SECRET_KEY: ${SECRET_KEY:-dev-secret-key-change-in-prod}
+    networks:
+      - lanche-network
+    depends_on:
+      - db
+    # labels para o Dokploy/Traefik caso você queira rotear pro backend via subdomínio
+    # labels:
+    #   - "traefik.enable=true"
+    #   - "traefik.http.routers.lanche-api.rule=Host(`api.seu-dominio.com`)"
+    #   - "traefik.http.services.lanche-api.loadbalancer.server.port=8008"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+    container_name: lanche-frontend-prod
+    restart: always
+    networks:
+      - lanche-network
+    # Em plataformas como Dokploy, a porta 80 da máquina host já está ocupada pelo roteador principal (Traefik).
+    # Portanto, NÃO mapeamos portas diretamente para a máquina host usando `ports: - "80:80"`.
+    # A exposição deve ser feita ativando as labels abaixo:
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.lanche-web.rule=Host(`cole-seu-dominio-aqui.com`)"
+      - "traefik.http.services.lanche-web.loadbalancer.server.port=80"
+
+networks:
+  lanche-network:
+    driver: bridge
+
+volumes:
+  postgres_data:

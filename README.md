@@ -161,6 +161,24 @@ cp .env.example .env
 npm run dev
 ```
 
+### Opção 3: Deploy via Dokploy (Produção)
+
+O projeto está preparado para deploy de produção no [Dokploy](https://dokploy.com) usando Docker Compose.
+
+1. Acesse o painel do Dokploy.
+2. Crie um novo serviço do tipo **Compose**.
+3. Conecte o seu repositório do Github.
+4. No campo **Compose File Path**, informe `docker-compose.prod.yml`.
+5. Preencha a aba **Environment** no Dokploy com as seguintes variáveis de produção essenciais:
+   ```env
+   POSTGRES_USER=seu_usuario_seguro
+   POSTGRES_PASSWORD=sua_senha_segura
+   POSTGRES_DB=lanche_prod_db
+   SECRET_KEY=sua_secret_key_muito_segura
+   ```
+6. Opcionalmente, descomente os blocos `labels` no arquivo `docker-compose.prod.yml` para rotear automaticamente via domínio usando o Traefik embutido do Dokploy.
+7. Clique em **Deploy**. O Dokploy subirá os bancos de dados, backend (Uvicorn) e frontend (Vite + Nginx de Produção).
+
 ## 📝 Funcionalidades Implementadas
 
 ### MVP v1.0

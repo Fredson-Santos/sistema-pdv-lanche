@@ -24,8 +24,8 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 # Copiar os arquivos construídos do estágio de build para o nginx
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Expor a porta 80
-EXPOSE 80
+# Expor a porta 3001
+EXPOSE 3001
 
 # Iniciar o nginx
 CMD ["nginx", "-g", "daemon off;"]

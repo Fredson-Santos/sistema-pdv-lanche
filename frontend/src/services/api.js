@@ -3,10 +3,9 @@ import axios from 'axios'
 const hostname = typeof window !== 'undefined' ? window.location.hostname : 'localhost'
 const envUrl = import.meta.env.VITE_API_URL
 
-// Se o envUrl existir e não for localhost, usa ele. 
-// Caso contrário (está vazio ou é localhost), usa a detecção dinâmica para suportar rede local.
-const BASE_URL = (envUrl && !envUrl.includes('localhost')) 
-  ? envUrl 
+// Em produção, a API estará acessível no mesmo domínio via proxy reverso do Nginx
+const BASE_URL = import.meta.env.PROD 
+  ? (envUrl || `https://${hostname}`) 
   : `http://${hostname}:8008`
 
 export const api = axios.create({

@@ -20,8 +20,15 @@ class CryptoManager:
         self.key = key or os.getenv("ENCRYPTION_KEY")
         
         if not self.key:
-            # Gerar chave padrão para desenvolvimento
-            self.key = Fernet.generate_key().decode()
+            # Em vez de gerar chave aleatória que corrompe o banco ao reiniciar, 
+            # deriva uma chave válida a partir do SECRET_KEY
+            import hashlib
+            import base64
+            from app.core.config import settings
+            
+            # Fernet precisa de 32 bytes base64 url-safe
+            key_bytes = hashlib.sha256(settings.SECRET_KEY.encode()).digest()
+            self.key = base64.urlsafe_b64encode(key_bytes).decode()
             
         self.cipher = Fernet(self.key.encode() if isinstance(self.key, str) else self.key)
     
